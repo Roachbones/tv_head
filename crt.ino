@@ -11,12 +11,12 @@
 #define N_LEDS 300
 #define SCREEN_WIDTH 20
 #define SCREEN_HEIGHT 15
-#define LED_PIN 2
+#define LED_PIN 6
 #define GRAV_ANGLE -1.6 // tilt correction in case the board is glued in at an angle
 const float SIN_GRAV_ANGLE = sin(GRAV_ANGLE);
 const float COS_GRAV_ANGLE = cos(GRAV_ANGLE);
 
-#define INITIAL_BRIGHTNESS 70
+#define INITIAL_BRIGHTNESS 150
 #define MAX_CMD_LEN 256
 #define MAX_HEARTS 4
 #define TEXT_COLOR CHSV(200, 190, 199)
@@ -275,8 +275,8 @@ void executeCommand() {
   //commandString = String(commandBytes);
   newCommandFlag = false;
   staleCommandFlag = true;
-  Serial.print("Command received: ");
-  Serial.println(commandBytes);
+  Serial1.print("Command received: ");
+  Serial1.println(commandBytes);
   if (strsMatch(commandBytes, "race")) {
     race();
   }
@@ -370,9 +370,25 @@ void executeCommand() {
   else if (strsMatch(commandBytes, "blush") or strsMatch(commandBytes, "bl")) {
     blush();
   }
+  else if (strsMatch(commandBytes, "bu") or strsMatch(commandBytes, "brighter")) {
+    adjustBrightness(25);
+  }
+  else if (strsMatch(commandBytes, "bd") or strsMatch(commandBytes, "darker")) {
+    adjustBrightness(-25);
+  }
+  else if (strsMatch(commandBytes, "brightest")) {
+    adjustBrightness(255);
+  }
+  else if (strsMatch(commandBytes, "dark")) {
+    FastLED.setBrightness(16);
+  }
+  else if (strsMatch(commandBytes, "help")) {
+    Serial1.println("animation commands: h(earts), m(atrix), d(rops), s(piral), e(ye), t[english text], C[chinese text], life, liss, r(ain), b(all), melt, :), ow, :3, ;3, error, :(, cry, p(ipes), w(ave), bl(ush)");
+    Serial1.println("brightness control: bu / brighter, bd / darker, brightest, dark");
+  }
   else {
-    Serial.println("error: invalid command!");
-    Serial.println(commandString);
+    Serial1.print(">~<\" Error! Invalid command ");
+    Serial1.println(commandString);
     //CircuitPlayground.playTone(300, 100);
   }
 }
@@ -380,28 +396,21 @@ void executeCommand() {
 void setup() {
   CircuitPlayground.begin(50); // brightness of onboard LEDs
   Serial.begin(9600); // opens usb serial port, sets data rate to 9600 bps
-  Serial1.begin(115200);//
+  Serial1.begin(9600);//
   FastLED.addLeds<NEOPIXEL, LED_PIN>(raw_leds, N_LEDS);
   FastLED.setBrightness(INITIAL_BRIGHTNESS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 900);
   // throw out the initial erroneous byte sent at startup
   delay(10);
   Serial1.read();
+  Serial1.println("Hewwo! :3");
+  eye(); // play eye animation at startup
 }
 
 void loop() {
 
   if (CircuitPlayground.rightButton()) {
     delay(600000);
-  }
-  
-  // just to make sure it's still responsive
-  if (CircuitPlayground.leftButton() and not light) {
-    light = true;
-    CircuitPlayground.setPixelColor(0, 255, 0, 255);
-  } else if (not CircuitPlayground.leftButton() and light) {
-    light = false;
-    CircuitPlayground.setPixelColor(0, 0, 0, 0);
   }
   
   listenForCommand();
