@@ -396,7 +396,7 @@ void executeCommand() {
 void setup() {
   CircuitPlayground.begin(50); // brightness of onboard LEDs
   Serial.begin(9600); // opens usb serial port, sets data rate to 9600 bps
-  Serial1.begin(9600);//
+  Serial1.begin(9600); // may need to edit this based on hardware serial input device baudrate
   FastLED.addLeds<NEOPIXEL, LED_PIN>(raw_leds, N_LEDS);
   FastLED.setBrightness(INITIAL_BRIGHTNESS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 900);
